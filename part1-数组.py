@@ -90,4 +90,29 @@ class Solution:
 #注意: 虽然用了两层循环, 但时间复杂度仍然是O(n), 因为指针 start 和 end 最多各移动 n 次。
 
 #数组5 - 螺旋矩阵2 (leetcode 59):
+#坚持全程左闭右开处理
+class Solution:
+    def generateMatrix(self, n):
+        result = [[0] * n for _ in range(n)]
+        loops = n//2 #循环的圈数
+        num = 1
+        for l in range(loops):
+            for i in range(n-1-2*l): #向右
+                result[l][l+i] = num
+                num += 1
+            for i in range(n-1-2*l): #向下
+                result[l+i][n-1-l] = num
+                num += 1        
+            for i in range(n-1-2*l): #向左
+                result[n-1-l][n-1-l-i] = num
+                num += 1
+            for i in range(n-1-2*l): #向上
+                result[n-1-l-i][l] = num
+                num += 1             
+
+        if n%2 == 1: #如果n是奇数, 中心剩的一个值需要单独处理
+            mid = (n - 1) // 2
+            result[mid][mid] = n * n
+            
+        return result
 
