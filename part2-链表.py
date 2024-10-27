@@ -120,6 +120,58 @@ class Solution:
             curr = curr.next.next
         return dummy_head.next
 
-#链表5 - 删除链表的倒数第 N 个结点 (leetcode 19):
+#链表5 - 删除链表的倒数第N个结点 (leetcode 19):
+#双指针
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        count = 0
+        dummy_head = ListNode(next=head)
+        fast = dummy_head
+        for i in range(n+1): #fast首先走n+1步 ，为什么是n+1而不是n，因为只有这样同时移动的时候slow才能指向删除节点的上一个节点（方便做删除操作）
+            fast = fast.next
+        
+        slow = dummy_head
+        while(fast):
+            fast = fast.next
+            slow = slow.next
+        
+        slow.next = slow.next.next
+
+        return dummy_head.next
 
 #链表6 - 环形链表2 (leetcode 142):
+#方法一: 快慢指针法，分别定义 fast 和 slow 指针，从头结点出发，fast指针每次移动两个节点，slow指针每次移动一个节点
+#如果 fast 和 slow指针在途中相遇 ，说明这个链表有环
+#(通过数学推理) 从头结点出发一个指针，从相遇节点也出发一个指针，这两个指针每次只走一个节点， 那么当这两个指针相遇的时候就是环形入口的节点
+class Solution:
+    def detectCycle(self, head: ListNode) -> ListNode:
+        slow = head
+        fast = head
+        
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            
+            # If there is a cycle, the slow and fast pointers will eventually meet
+            if slow == fast:
+                # Move one of the pointers back to the start of the list
+                slow = head
+                while slow != fast:
+                    slow = slow.next
+                    fast = fast.next
+                return slow
+        
+        return None
+
+#方法二: 集合法(更直观): 遍历链表，将每个节点存储在集合中，如果遍历到的节点已经在集合中，说明有环，返回该节点
+class Solution:
+    def detectCycle(self, head: ListNode) -> ListNode:
+        visited = set()
+        
+        while head:
+            if head in visited:
+                return head
+            visited.add(head)
+            head = head.next
+        
+        return None
