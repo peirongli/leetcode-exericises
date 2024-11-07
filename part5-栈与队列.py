@@ -187,5 +187,31 @@ class Solution:
             result.append(res)
         return result
 #单调队列, 时间复杂度O(n)
+#hard; to do
 
 #题7 - 前K个高频元素(leetcode 347)
+#using min heap (heapq default)
+import heapq
+class Solution:
+    def topKFrequent(self, nums: List[int], k: int) -> List[int]:       
+        map_ = {}
+        n = len(nums)
+        for i in range(n):
+            if nums[i] in map_.keys():
+                map_[nums[i]] += 1
+            else:     
+                map_.update({nums[i]: 1})
+        
+        pri_que = [] #小顶堆
+        
+        #用固定大小为k的小顶堆，扫描所有频率的数值
+        for key, freq in map_.items():
+            heapq.heappush(pri_que, (freq, key))
+            if len(pri_que) > k: #如果堆的大小大于了K，则队列弹出，保证堆的大小一直为k
+                heapq.heappop(pri_que)
+        
+        #找出前K个高频元素，因为小顶堆先弹出的是最小的，所以倒序来输出到数组
+        result = [0] * k
+        for i in range(k-1, -1, -1):
+            result[i] = heapq.heappop(pri_que)[1]
+        return result
