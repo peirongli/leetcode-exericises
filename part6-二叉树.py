@@ -244,7 +244,7 @@ class Solution:
                 node = queue.popleft()
                 level.append(node.val)
 
-                for child in node.children:
+                for child in node.children:#推广: 不止有左右child
                     queue.append(child)
 
             result.append(level)
@@ -264,21 +264,169 @@ class Solution:
         traversal(root,0)
         return result
 #515.在每个树行中找最大值: 每层的结果求个最大值就行
-#116.填充每个节点的下一个右侧节点指针 
-#117.填充每个节点的下一个右侧节点指针II
+#116.填充每个节点的下一个右侧节点指针
+from collections import deque
+class Solution:
+    def connect(self, root: 'Optional[Node]') -> 'Optional[Node]':
+        if not root:
+            return []
+            
+        queue = deque([root])
+        while queue:
+
+            n = len(queue)
+            prev = None
+            for i in range(n):
+                curr = queue.popleft()
+                if prev:
+                    prev.next = curr
+                prev = curr
+
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+        return root
+#117.填充每个节点的下一个右侧节点指针II: 同上
 
 
 #题6 - 翻转二叉树 (leetcode 226)
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return None
+        queue = collections.deque([root])
+        while queue:
+            n = len(queue)
+            for i in range(n):
+                curr = queue.popleft()
+                #if curr.left and curr.right: 。注意这个判断条件不需要加, 不要多此一举
+                curr.left, curr.right = curr.right, curr.left
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+        return root
 
 #题7 - 对称二叉树 (leetcode 101)
+#注意要比较的不是左右节点, 所以要同时遍历左右子树来比较
+class Solution:
+    def isSymmetric(self, root: TreeNode) -> bool:
+        if not root:
+            return True
+        queue = collections.deque()
+        queue.append(root.left)
+        queue.append(root.right)
+        while queue:
+            leftNode = queue.popleft()
+            rightNode = queue.popleft()
+            if not leftNode and not rightNode:
+                continue
+            
+            if not leftNode or not rightNode or leftNode.val != rightNode.val:
+                return False
+            queue.append(leftNode.left)
+            queue.append(rightNode.right)
+            queue.append(leftNode.right)
+            queue.append(rightNode.left)
+        return True
 
 #题8 - 二叉树的最大深度 (leetcode 104)
+class Solution:
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+
+        queue = collections.deque([root])
+        result = 0
+
+        while queue:
+            result += 1
+            n = len(queue)
+            for i in range(n):
+                curr = queue.popleft()
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+        return result
 
 #题9 - 二叉树的最小深度 (leetcode 111)
+class Solution:
+    def minDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+
+        queue = collections.deque([root])
+        result = 0
+        while queue:
+            n = len(queue)
+            result += 1
+            for i in range(n):         
+                curr = queue.popleft()
+                if (not curr.left) and (not curr.right):
+                    return result
+                else:
+                    if curr.left:
+                        queue.append(curr.left)
+                    if curr.right:
+                        queue.append(curr.right)
+        return result
 
 #题10 - 完全二叉树的节点个数 (leetcode 222)
+class Solution:
+    def countNodes(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        queue = collections.deque([root])
+        result = 1
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if curr.left:
+                    queue.append(curr.left)
+                    result += 1
+                if curr.right:
+                    queue.append(curr.right)
+                    result += 1
+        return result
 
 #题11 - 平衡二叉树 (leetcode 110)
+#本题中，一棵高度平衡二叉树定义为：一个二叉树每个节点的左右两个子树的高度差的绝对值不超过1
+#暴力法(通过225/228个测试用例):
+class Solution:
+    def isBalanced(self, root: Optional[TreeNode]) -> bool:
+        if not root:
+            return True
+        queue = collections.deque([root])
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if curr.left:
+                    queue.append(curr.left)
+                    if not curr.right:
+                        if curr.left.left or curr.left.right:
+                            return False
+                    if curr.right and (not curr.right.left) and (not curr.right.right):
+                        if curr.left.left:
+                            if curr.left.left.left or curr.left.left.right:
+                                return False
+                        if curr.left.right:
+                            if curr.left.right.left or curr.left.right.right:
+                                return False
+                if curr.right:
+                    queue.append(curr.right)
+                    if not curr.left:
+                        if curr.right.left or curr.right.right:
+                            return False
+                    if curr.left and (not curr.left.left) and (not curr.left.right):
+                        if curr.right.left:
+                            if curr.right.left.left or curr.right.left.right:
+                                return False
+                        if curr.right.right:
+                            if curr.right.right.left or curr.right.right.right:
+                                return False
+        return True
 
 #题12 - 二叉树的所有路径 (leetcode 257)
 
