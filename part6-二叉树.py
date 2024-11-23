@@ -429,22 +429,248 @@ class Solution:
         return True
 
 #题12 - 二叉树的所有路径 (leetcode 257)
+#用前序遍历, 要回溯
+class Solution:
+    def binaryTreePaths(self, root: Optional[TreeNode]) -> List[str]:
+        if not root:
+            return []
+        stack = [root]
+        path_stack = [str(root.val)]
+        result = []
+        while stack:
+            curr = stack.pop()
+            path = path_stack.pop()
+            if (not curr.left) and (not curr.right):
+                result.append(path)
+            if curr.right:
+                stack.append(curr.right)
+                path_stack.append(path + '->' + str(curr.right.val))
+            if curr.left:
+                stack.append(curr.left)
+                path_stack.append(path + '->' + str(curr.left.val))
+        return result
 
 #题13 - 左叶子之和 (leetcode 404)
+class Solution:
+    def sumOfLeftLeaves(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        queue = collections.deque([root])
+        sum = 0
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if curr.left:
+                    queue.append(curr.left)
+                    if (not curr.left.left) and (not curr.left.right):
+                        sum += curr.left.val
+                if curr.right:
+                    queue.append(curr.right)
+        return sum
 
 #题14 - 找树左下角的值 (leetcode 513)
+class Solution:
+    def findBottomLeftValue(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return []
+        queue = collections.deque([root])
+        result = []
+        while queue:
+            level = []
+            for _ in range(len(queue)):
+                cur = queue.popleft()
+                level.append(cur.val)
+                if cur.left:
+                    queue.append(cur.left)
+                if cur.right:
+                    queue.append(cur.right)
+            result.append(level)
+        left_most = result[-1][0]
+        return left_most
 
 #题15 - 路径总和 (leetcode 112)
+#无脑版: 照搬lc257所有路径, 在它的基础上加上判断的处理就行 (可能在lc113用这个方法更好, 因为它要找所有符合的路径)
+class Solution:
+    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:
+        if not root:
+            return False
+        stack = [root]
+        path_stack = [str(root.val)]
+        result = []
+        while stack:
+            curr = stack.pop()
+            path = path_stack.pop()
+            if (not curr.left) and (not curr.right):
+                result.append(path)
+            if curr.right:
+                stack.append(curr.right)
+                path_stack.append(path + '->' + str(curr.right.val))
+            if curr.left:
+                stack.append(curr.left)
+                path_stack.append(path + '->' + str(curr.left.val))
+        
+        for path in result:
+            vals = path.split('->')
+            sum = 0
+            for val in vals:
+                sum += int(val)
+            if sum == targetSum:
+                return True
+        return False
+#正常迭代
+class Solution:
+    def hasPathSum(self, root: TreeNode, sum: int) -> bool:
+        if not root:
+            return False
+        # 栈里放的是pair<节点指针，路径数值>
+        st = [(root, root.val)]
+        while st:
+            node, path_sum = st.pop()
+            # 如果该节点是叶子节点了，同时该节点的路径数值等于sum，那么就返回true
+            if not node.left and not node.right and path_sum == sum:
+                return True
+            if node.right:
+                st.append((node.right, path_sum + node.right.val))
+            if node.left:
+                st.append((node.left, path_sum + node.left.val))
+        return False
 
 #题16 - 从中序与后序遍历序列构造二叉树 (leetcode 106)
+class Solution:
+    def buildTree(self, inorder: List[int], postorder: List[int]) -> Optional[TreeNode]:
+        if not postorder:
+            return None
+
+        root_val = postorder[-1]
+        root = TreeNode(root_val)
+
+        root_idx = inorder.index(root_val)
+
+        inorder_left = inorder[:root_idx]
+        inorder_right = inorder[root_idx + 1:]
+
+        postorder_left = postorder[:root_idx]
+        postorder_right = postorder[root_idx:-1]
+
+        #递归
+        root.left = self.buildTree(inorder_left, postorder_left)
+        root.right = self.buildTree(inorder_right, postorder_right)
+        
+        return root
+#额外: 从前序与中序遍历序列构造二叉树 (leetcode 105)
+#注意: 前序和后序不能唯一确定一棵二叉树，因为没有中序遍历无法确定左右部分，也就是无法分割
+class Solution:
+    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:
+        if not inorder:
+            return None
+        root_val = preorder[0]
+        root = TreeNode(root_val)
+        root_idx = inorder.index(root_val)
+
+        inorder_left = inorder[:root_idx]
+        inorder_right = inorder[root_idx + 1:]
+
+        preorder_left = preorder[1:root_idx + 1]
+        preorder_right = preorder[root_idx + 1:]
+
+        root.left = self.buildTree(preorder_left, inorder_left)
+        root.right = self.buildTree(preorder_right, inorder_right)
+
+        return root
 
 #题17 - 最大二叉树 (leetcode 654)
+class Solution:
+    def constructMaximumBinaryTree(self, nums: List[int]) -> Optional[TreeNode]:
+        if not nums:
+            return None
+        root_val = max(nums)
+        root_idx = nums.index(root_val)
+        root = TreeNode(root_val)
+
+        left_tree = nums[:root_idx]
+        right_tree = nums[root_idx + 1:]
+
+        root.left = self.constructMaximumBinaryTree(left_tree)
+        root.right = self.constructMaximumBinaryTree(right_tree)
+
+        return root
 
 #题18 - 合并二叉树 (leetcode 617)
+class Solution:
+    def mergeTrees(self, root1: Optional[TreeNode], root2: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root1 and not root2:
+            return None
+        if not root1:
+            return root2
+        if not root2:
+            return root1
+        
+        root_val = root1.val + root2.val
+        root = TreeNode(root_val)
+        
+        root.left = self.mergeTrees(root1.left, root2.left)
+        root.right = self.mergeTrees(root1.right, root2.right)
+
+        return root
+#改进: 可以重复使用题目给出的节点而不是创建新的节点来节省时间, 空间
 
 #题19 - 二叉搜索树中的搜索 (leetcode 700)
+class Solution:
+    def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        if not root:
+            return None
+        queue = collections.deque([root])
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if curr.val == val:
+                    return curr
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+        return None
 
 #题20 - 验证二叉搜索树 (leetcode 98)
+#二叉搜索树是一个有序树:
+#若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值；
+#若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值；
+#它的左、右子树也分别为二叉搜索树
+#初版: 通过77/85个测试用例. 误区: 没有考虑左(右)子树的所有节点都必须小(大)于当前节点
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        if not root:
+            return True
+        queue = collections.deque([root])
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if curr.left:
+                    queue.append(curr.left)
+                    if curr.left.val >= curr.val:
+                        return False
+                if curr.right:
+                    queue.append(curr.right)
+                    if curr.right.val <= curr.val:
+                        return False
+        return True
+#比较巧妙的方法: 中序遍历下，输出的二叉搜索树节点的数值是有序序列。利用这个特性，验证二叉搜索树，就等于判断一个序列是否递增
+class Solution:
+    def isValidBST(self, root):
+        stack = []
+        cur = root
+        pre = None  # 记录前一个节点
+        while cur is not None or len(stack) > 0:
+            if cur is not None:
+                stack.append(cur)
+                cur = cur.left  # 左
+            else:
+                cur = stack.pop()  # 中
+                if pre is not None and cur.val <= pre.val:
+                    return False
+                pre = cur  # 保存前一个访问的结点
+                cur = cur.right  # 右
+        return True
 
 #题21 - 二叉搜索树的最小绝对差 (leetcode 530)
 
