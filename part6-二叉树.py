@@ -673,19 +673,196 @@ class Solution:
         return True
 
 #题21 - 二叉搜索树的最小绝对差 (leetcode 530)
+#还是利用bst中序遍历结果是有序数组的特性做
+class Solution:
+    def getMinimumDifference(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return
+        stack = []
+        result = []
+        curr = root
+        while curr or stack:
+            if curr:
+                stack.append(curr)
+                curr = curr.left
+            else:
+                curr = stack.pop()
+                result.append(curr.val)
+                curr = curr.right
+        diff = result[1] - result[0]
+        for i in range(2, len(result)):
+            temp = result[i] - result[i-1]
+            if temp < diff:
+                diff = temp
+        return diff
 
 #题22 - 二叉搜索树中的众数 (leetcode 501)
+class Solution:
+    def findMode(self, root: Optional[TreeNode]) -> List[int]:
+        if not root:
+            return
+        stack = []
+        result = []
+        curr = root
+        while curr or stack:
+            if curr:
+                stack.append(curr)
+                curr = curr.left
+            else:
+                curr = stack.pop()
+                result.append(curr.val)
+                curr = curr.right
+        #找重数的这一步还有待优化
+        freq = {}
+        for i in range(len(result)):
+            if result[i] not in freq.keys():
+                freq.update({result[i]: 1})
+            else:
+                freq[result[i]] += 1
+        max_value = max(freq.values())
+        max_keys = [key for key, value in freq.items() if value == max_value]
+        return max_keys
 
 #题23 - 二叉树的最近公共祖先 (leetcode 236)
+#本题用迭代不合适, 用递归
+class Solution:
+    def lowestCommonAncestor(self, root, p, q):
+        if root == q or root == p or root is None:
+            return root
+
+        left = self.lowestCommonAncestor(root.left, p, q)
+        right = self.lowestCommonAncestor(root.right, p, q)
+
+        if left is not None and right is not None:
+            return root
+
+        if left is None:
+            return right
+        return left
 
 #题24 - 二叉搜索树的最近公共祖先 (leetcode 235)
+#因为bst的特性, 从上向下遍历，第一次遇到curr节点的数值在[p, q]区间中，那么curr就是p和q的最近公共祖先
+class Solution:
+    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        if not root:
+            return None
+        queue = collections.deque([root])
+        while queue:
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                if (curr.val >= p.val and curr.val <= q.val) or (curr.val >= q.val and curr.val <= p.val):
+                    return curr
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+        return None
+#精简版:
+class Solution:
+    def lowestCommonAncestor(self, root, p, q):
+        while root:
+            if root.val > p.val and root.val > q.val:
+                root = root.left
+            elif root.val < p.val and root.val < q.val:
+                root = root.right
+            else:
+                return root
+        return None
 
 #题25 - 二叉搜索树中的插入操作 (leetcode 701)
+class Solution:
+    def insertIntoBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        node = TreeNode(val)
+        if not root:
+            return node
+        elif root.val > val:
+            if not root.left:
+                root.left = node
+            else:
+                self.insertIntoBST(root.left, val)
+        elif root.val < val:
+            if not root.right:
+                root.right = node
+            else:
+                self.insertIntoBST(root.right, val)
+        return root
 
 #题26 - 删除二叉搜索树中的节点 (leetcode 450)
+class Solution:
+    def deleteNode(self, root: Optional[TreeNode], key: int) -> Optional[TreeNode]:
+        node = TreeNode(key)
+        if not root:
+            return None
+        elif root.val == key:
+            if (not root.left) and (not root.right):
+                root = None
+            elif root.left and (not root.right):
+                root = root.left
+            elif (not root.left) and root.right:
+                root = root.right
+            elif root.left and root.right:#最复杂的情况: 将删除节点的左子树头结点（左孩子）放到删除节点的右子树的最左面节点的左孩子上，返回删除节点右孩子为新的根节点。
+                curr = root.right
+                while curr.left is not None:
+                    curr = curr.left
+                curr.left = root.left
+                return root.right
+        elif root.val > key:
+            root.left = self.deleteNode(root.left, key)
+        elif root.val < key:
+            root.right = self.deleteNode(root.right, key)
+        return root
 
 #题27 - 修剪二叉搜索树 (leetcode 669)
+class Solution:
+    def trimBST(self, root: Optional[TreeNode], low: int, high: int) -> Optional[TreeNode]:
+        if not root:
+            return None
+        elif root.val < low:
+            root = root.right
+            return self.trimBST(root, low, high)
+        elif root.val > high:
+            root = root.left
+            return self.trimBST(root, low, high)
+        else: #low < root.val < high
+            root.left = self.trimBST(root.left, low, high)
+            root.right = self.trimBST(root.right, low, high)
+        return root
 
 #题28 - 将有序数组转换为二叉搜索树 (leetcode 108)
+#在题17 - 最大二叉树 (leetcode 654)的基础上稍做修改即可
+class Solution:
+    def sortedArrayToBST(self, nums: List[int]) -> Optional[TreeNode]:
+        if not nums:
+            return None
+        n = len(nums)
+        mid = n//2
+        root_val = nums[mid]
+        root = TreeNode(root_val)
+
+        left_tree = nums[:mid]
+        right_tree = nums[mid + 1:]
+
+        root.left = self.sortedArrayToBST(left_tree)
+        root.right = self.sortedArrayToBST(right_tree)
+
+        return root
 
 #题29 - 把二叉搜索树转换为累加树 (leetcode 538)
+#在中序遍历的基础上做一点修改即可
+class Solution:
+    def convertBST(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return None
+        stack = []
+        total = 0
+        curr = root
+        while curr or stack:
+            if curr:
+                stack.append(curr)
+                curr = curr.right
+            else:
+                curr = stack.pop()
+                total += curr.val
+                curr.val = total
+                curr = curr.left
+        return root
