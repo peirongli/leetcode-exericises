@@ -298,10 +298,143 @@ class Solution:
         return count
 
 #题14 - 划分字母区间(leetcode 763)
+#如果找到之前遍历过的所有字母的最远边界，说明这个边界就是分割点了
+class Solution:
+    def partitionLabels(self, s: str) -> List[int]:
+        chars = list(s)
+        n = len(chars)
+        last_appearance = {}
+        for i in range(n):
+            if chars[i] not in last_appearance.keys():
+                last_appearance.update({chars[i]: i})
+            else:
+                last_appearance[chars[i]] = i
+        #for i, ch in enumerate(s):
+            #last_appearance[ch] = i
+        start = 0
+        end = 0
+        result = []
+        for i in range(n):
+            end = max(last_appearance[chars[i]], end)
+            if i == end:
+                result.append(end-start+1)
+                start = i + 1
+        return result
 
 #题15 - 合并区间(leetcode 56)
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        n = len(intervals)
+        intervals.sort(key = lambda x: (x[0], x[1]))
+        result = []
+
+        result.append(intervals[0])
+        for i in range(1, n):
+            if result[-1][1] >= intervals[i][0]:
+                #合并区间，只需要更新结果集最后一个区间的右边界，因为根据排序，左边界已经是最小的
+                result[-1][1] = max(result[-1][1], intervals[i][1])
+            else:
+                result.append(intervals[i])
+
+        return result
 
 #题16 - 单调自增的数字(leetcode 738)
+#初版(错误):
+class Solution:
+    def monotoneIncreasingDigits(self, n: int) -> int:
+        digits = [int(digit) for digit in str(n)]
+        if len(digits) == 1:
+            return digits[0]
+        for i in range(len(digits)-1, 0, -1):
+            if digits[i] < digits[i-1]:
+                digits[i] = 9
+                digits[i-1] -= 1
+        while digits[0] == 0:
+            digits.pop(0)
+        result = int(''.join(map(str, digits)))
+        return result
+#正确版:
+class Solution:
+    def monotoneIncreasingDigits(self, n: int) -> int:
+        digits = [int(digit) for digit in str(n)]
+        if len(digits) == 1:
+            return digits[0]
+        for i in range(len(digits)-1, 0, -1):
+            if digits[i] < digits[i-1]:
+                #digits[i] = 9
+                digits[i-1] -= 1
+                for j in range(i, len(digits)): #将修改位置后面的字符都设置为9，因为修改前一个字符可能破坏了递增性质
+                    digits[j] = 9
+        #while digits[0] == 0: #最后转换int的时候会自动把0去掉, 所以不需要这一步
+            #digits.pop(0)
+        result = int(''.join(map(str, digits)))
+        return result
 
 #题17 - 监控二叉树(leetcode 968)
+#初版(错误, 通过112/171个测试用例):
+class Solution:
+    def minCameraCover(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        queue = collections.deque([root])
+        layers = []
+        while queue:
+            level_nodes = 0
+            for i in range(len(queue)):
+                curr = queue.popleft()
+                level_nodes += 1
+                if curr.left:
+                    queue.append(curr.left)
+                if curr.right:
+                    queue.append(curr.right)
+            layers.append(level_nodes)
+
+        n = len(layers)
+        if n == 0:
+            return 0
+        elif n <= 2:
+            return 1
+        elif n % 3 == 0 or n % 3 == 2:
+            result = sum(layers[-2::-3])
+        else: #n%3==1
+            result = sum(layers[-2::-3]) + 1
+
+        return result
+#正确版(递归):
+class Solution:
+    def minCameraCover(self, root: TreeNode) -> int:
+        result = [0]
+        if self.traversal(root, result) == 0:
+            result[0] += 1
+
+        return result[0]
+
+        
+    def traversal(self, cur: TreeNode, result: List[int]) -> int:
+        if not cur:
+            return 2
+
+        left = self.traversal(cur.left, result)
+        right = self.traversal(cur.right, result)
+
+        # 情况1: 左右节点都有覆盖
+        if left == 2 and right == 2:
+            return 0
+
+        # 情况2:
+        # left == 0 && right == 0 左右节点无覆盖
+        # left == 1 && right == 0 左节点有摄像头，右节点无覆盖
+        # left == 0 && right == 1 左节点无覆盖，右节点有摄像头
+        # left == 0 && right == 2 左节点无覆盖，右节点覆盖
+        # left == 2 && right == 0 左节点覆盖，右节点无覆盖
+        elif left == 0 or right == 0:
+            result[0] += 1
+            return 1
+
+        # 情况3:
+        # left == 1 && right == 2 左节点有摄像头，右节点有覆盖
+        # left == 2 && right == 1 左节点有覆盖，右节点有摄像头
+        # left == 1 && right == 1 左右节点都有摄像头
+        else:
+            return 2
 
