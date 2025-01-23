@@ -315,8 +315,49 @@ class Solution:
 
 #part4 排列
 #题12 - 全排列(leetcode 46)
+#因为排列是有序的, 所以要引入used数组来标记使用过的元素
+class Solution:
+    def permute(self, nums):
+        result = []
+        used = [False] * len(nums)
+        self.backtracking(nums, [], used, result)
+        return result
+
+    def backtracking(self, nums, path, used, result):
+        if len(path) == len(nums):
+            result.append(path[:])
+            return
+        for i in range(len(nums)):
+            if used[i]:
+                continue
+            used[i] = True
+            path.append(nums[i])
+            self.backtracking(nums, path, used, result)
+            path.pop()
+            used[i] = False
 
 #题13 - 全排列2(leetcode 47)
+class Solution:
+    def permuteUnique(self, nums: List[int]) -> List[List[int]]:
+        nums.sort()
+        used = [False] * len(nums)
+        result = []
+        self.backtrack(nums, used, [], result)
+        return result
+    def backtrack(self, nums, used, path, result):
+        if len(path) == len(nums):
+            temp = path[:]
+            if temp not in result:
+                result.append(temp)
+            return
+        for i in range(len(nums)):
+            if used[i] == True:
+                continue
+            path.append(nums[i])
+            used[i] = True
+            self.backtrack(nums, used, path, result)
+            path.pop()
+            used[i] = False
 
 #part5 棋盘问题
 #题14 - N皇后(leetcode 51)
